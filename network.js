@@ -53,20 +53,26 @@ H.forEach(h=>{if(!n.tokens[h.mint])n.tokens[h.mint]={name:tokCache[h.mint]?.name
 all[name]=n;saveNets(all)}catch(e){box.insertAdjacentHTML("beforeend",`<p class="err">${esc(e.message)}</p>`)}pr.done()}
 /* --- Graph (Canvas, Force-Layout, Touch) --- */
 const G={nodes:[],edges:[],scale:1,ox:0,oy:0,sel:null};
-function buildGraph(n){const ids={};const nodes=[];const add=(id,type,roles,label)=>{if(ids[id])return ids[id];const o={id,type,roles,label,x:Math.random()*400-200,y:Math.random()*400-200,vx:0,vy:0};ids[id]=o;nodes.push(o);return o};
-for(const [a,m] of Object.entries(n.wallets))add(a,"wallet",m.roles,sh(a));for(const [t,i] of Object.entries(n.tokens))add(t,"token",["token"],"$"+(i.sym||sh(t)));
+const LAYOUT={};
+function buildGraph(n){const ids={};const nodes=[];const toks=Object.keys(n.tokens||{});const tAng={};toks.forEach((t,i)=>tAng[t]=i/Math.max(1,toks.length)*Math.PI*2);const big=Object.keys(n.wallets).length+toks.length>40;const R0=big?Math.max(300,toks.length*40):200;
+const home={};for(const e of n.edges){if(tAng[e.b]!=null&&home[e.a]==null)home[e.a]=e.b;if(tAng[e.a]!=null&&home[e.b]==null)home[e.b]=e.a}for(const [a,m] of Object.entries(n.wallets))if(home[a]==null&&m.src?.[0]){const t=toks.find(t=>n.tokens[t].sym===m.src[0]);if(t)home[a]=t}
+const add=(id,type,roles,label)=>{if(ids[id])return ids[id];let x=Math.random()*400-200,y=Math.random()*400-200;const t=type==="token"?id:home[id];if(big&&t!=null&&tAng[t]!=null){const a=tAng[t];x=Math.cos(a)*R0+(type==="token"?0:Math.random()*160-80);y=Math.sin(a)*R0+(type==="token"?0:Math.random()*160-80)}const o={id,type,roles,label,x,y,vx:0,vy:0};ids[id]=o;nodes.push(o);return o};
+for(const [a,m] of Object.entries(n.wallets))add(a,"wallet",m.roles,sh(a));for(const [t,i] of Object.entries(n.tokens||{}))add(t,"token",["token"],"$"+(i.sym||sh(t)));
 const edges=n.edges.filter(e=>ids[e.a]&&ids[e.b]).map(e=>({a:ids[e.a],b:ids[e.b],t:e.t}));
-for(let it=0;it<500;it++){const k=1-it/500;for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const A=nodes[i],B=nodes[j];let dx=A.x-B.x,dy=A.y-B.y,d2=dx*dx+dy*dy+.01;const f=3000/d2;dx*=f/Math.sqrt(d2);dy*=f/Math.sqrt(d2);A.vx+=dx;A.vy+=dy;B.vx-=dx;B.vy-=dy}
+const key=nodes.length+":"+edges.length+":"+(n.created||0);const L=LAYOUT[key];if(L){nodes.forEach(o=>{if(L[o.id]){o.x=L[o.id][0];o.y=L[o.id][1]}})}else{
+const N=nodes.length,IT=N>300?120:N>120?200:500,cut=big?250*250:1e12,grav=big?.0015:.004;
+for(let it=0;it<IT;it++){const k=1-it/IT;for(let i=0;i<N;i++){const A=nodes[i];for(let j=i+1;j<N;j++){const B=nodes[j];let dx=A.x-B.x,dy=A.y-B.y,d2=dx*dx+dy*dy+.01;if(d2>cut)continue;const f=3000/d2,d=Math.sqrt(d2);dx*=f/d;dy*=f/d;A.vx+=dx;A.vy+=dy;B.vx-=dx;B.vy-=dy}}
 for(const e of edges){const dx=e.b.x-e.a.x,dy=e.b.y-e.a.y,d=Math.sqrt(dx*dx+dy*dy)+.01,f=(d-90)*.02;e.a.vx+=dx/d*f;e.a.vy+=dy/d*f;e.b.vx-=dx/d*f;e.b.vy-=dy/d*f}
-for(const o of nodes){o.vx-=o.x*.004;o.vy-=o.y*.004;o.x+=Math.max(-20,Math.min(20,o.vx))*k;o.y+=Math.max(-20,Math.min(20,o.vy))*k;o.vx*=.6;o.vy*=.6}}
-G.nodes=nodes;G.edges=edges;fitGraph()}
+for(const o of nodes){o.vx-=o.x*grav;o.vy-=o.y*grav;o.x+=Math.max(-20,Math.min(20,o.vx))*k;o.y+=Math.max(-20,Math.min(20,o.vy))*k;o.vx*=.6;o.vy*=.6}}
+const C={};nodes.forEach(o=>C[o.id]=[o.x,o.y]);LAYOUT[key]=C}
+G.big=big;G.nodes=nodes;G.edges=edges;fitGraph()}
 function fitGraph(){const c=$("#netCanvas");if(!c||!G.nodes.length)return;const w=c.clientWidth,h=c.clientHeight;const xs=G.nodes.map(n=>n.x),ys=G.nodes.map(n=>n.y);const bw=Math.max(...xs)-Math.min(...xs)+80,bh=Math.max(...ys)-Math.min(...ys)+80;G.scale=Math.min(2,Math.min(w/bw,h/bh));G.ox=w/2-(Math.max(...xs)+Math.min(...xs))/2*G.scale;G.oy=h/2-(Math.max(...ys)+Math.min(...ys))/2*G.scale;drawGraph()}
 function drawGraph(){const c=$("#netCanvas");if(!c)return;const dpr=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*dpr;c.height=h*dpr;const x=c.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);
 const P=o=>[o.x*G.scale+G.ox,o.y*G.scale+G.oy];
-for(const e of G.edges){const [ax,ay]=P(e.a),[bx,by]=P(e.b);x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.setLineDash(e.t==="slot"?[4,4]:[]);x.strokeStyle=e.t==="fund"?"rgba(255,198,92,.7)":e.t==="create"?"rgba(255,92,138,.8)":e.t==="slot"?"rgba(177,140,255,.7)":"rgba(95,184,255,.55)";x.lineWidth=e.t==="fund"?2:1.4;x.shadowColor=x.strokeStyle;x.shadowBlur=6;x.stroke()}x.setLineDash([]);
+for(const e of G.edges){const [ax,ay]=P(e.a),[bx,by]=P(e.b);x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.setLineDash(e.t==="slot"?[4,4]:[]);x.strokeStyle=e.t==="fund"?"rgba(255,198,92,.7)":e.t==="create"?"rgba(255,92,138,.8)":e.t==="slot"?"rgba(177,140,255,.7)":"rgba(95,184,255,.55)";x.lineWidth=e.t==="fund"?2:1.4;x.shadowColor=x.strokeStyle;x.shadowBlur=G.big?0:6;x.stroke()}x.setLineDash([]);
 for(const o of G.nodes){const [px,py]=P(o);const r=(o.type==="token"?13:9)*Math.max(.7,Math.min(1.4,G.scale));x.save();x.translate(px,py);x.beginPath();if(o.type==="token")for(let i=0;i<6;i++){const a=i*Math.PI/3;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}else x.arc(0,0,r,0,7);x.closePath();
-const col=ROLE_C[o.roles[0]]||"#5fb8ff";x.fillStyle=col;x.shadowColor=col;x.shadowBlur=o===G.sel?30:14;x.fill();if(o.roles.length>1){x.lineWidth=3;x.strokeStyle=ROLE_C[o.roles[1]]||"#fff";x.stroke()}if(o===G.sel){x.lineWidth=2;x.strokeStyle="#fff";x.stroke()}x.restore();
-x.font=`${o.type==="token"?"bold ":""}11px monospace`;x.fillStyle="#cfeaff";x.textAlign="center";x.fillText(o.label,px,py+r+12)}}
+const col=ROLE_C[o.roles[0]]||"#5fb8ff";x.fillStyle=col;x.shadowColor=col;x.shadowBlur=o===G.sel?30:G.big?0:14;x.fill();if(o.roles.length>1){x.lineWidth=3;x.strokeStyle=ROLE_C[o.roles[1]]||"#fff";x.stroke()}if(o===G.sel){x.lineWidth=2;x.strokeStyle="#fff";x.stroke()}x.restore();
+x.font=`${o.type==="token"?"bold ":""}11px monospace`;x.fillStyle="#cfeaff";x.textAlign="center";if(!G.big||o.type==="token"||o===G.sel||G.scale>1.2)x.fillText(o.label,px,py+r+12)}}
 function hit(mx,my){let best=null,bd=22*22;for(const o of G.nodes){const px=o.x*G.scale+G.ox,py=o.y*G.scale+G.oy,d=(px-mx)**2+(py-my)**2;if(d<bd){bd=d;best=o}}return best}
 function initGraphUI(){const c=$("#netCanvas");if(!c||c._init)return;c._init=1;let pts=new Map(),moved=false,start=null,pinch=null;
 c.addEventListener("pointerdown",e=>{c.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.offsetX,e.offsetY]);moved=false;start=[e.offsetX,e.offsetY,G.ox,G.oy];if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),s:G.scale,ox:G.ox,oy:G.oy,cx:(a[0]+b[0])/2,cy:(a[1]+b[1])/2}}});
@@ -94,9 +100,9 @@ const notes=lsGet(NOTES,[]);notes.unshift({at:Date.now(),net:name,mint:h.mint,na
 const c=TG();if(c.on&&c.token&&c.chat){try{await tgCall(c.token,"sendMessage",{chat_id:c.chat,text,parse_mode:"HTML",disable_web_page_preview:true});notes[0].tg="✅ gesendet"}catch(e){notes[0].tg="❌ "+e.message}}else notes[0].tg="Telegram aus";
 lsSet(NOTES,notes.slice(0,50));renderNotes();return true}
 async function monTick(){if(monBusy||document.hidden&&!HKEY())return;monBusy=true;const all=nets();const cap=HKEY()?30:8;
-try{for(const [name,n] of Object.entries(all)){if(!n.monitor)continue;const ws=Object.keys(n.wallets).slice(0,cap);for(const w of ws){try{const last=n.mon[w];if(!last){const s=await sol("getSignaturesForAddress",[w,{limit:1}],false);n.mon[w]=s[0]?.signature||"none";continue}
+try{for(const [name,n] of Object.entries(all)){if(!n.monitor)continue;const allW=Object.keys(n.wallets);const st=(n.rr||0)%Math.max(1,allW.length);const ws=allW.length<=cap?allW:[...allW.slice(st),...allW].slice(0,cap);n.rr=st+ws.length;for(const w of ws){try{const last=n.mon[w];if(!last){const s=await sol("getSignaturesForAddress",[w,{limit:1}],false);n.mon[w]=s[0]?.signature||"none";continue}
 const sc=await scanWallet(w,{limit:15,until:last==="none"?undefined:last});if(sc.newest)n.mon[w]=sc.newest;if(sc.creates.length||sc.buys.length)await evaluate(name,n,w,sc)}catch(e){}}n.lastPoll=Date.now()}lsSet(NK,all)}finally{monBusy=false;const st=$("#monState");if(st)st.textContent=monStatus()}}
-function monStatus(){const on=Object.entries(nets()).filter(([k,n])=>n.monitor);return on.length?`🟢 Überwachung aktiv für ${on.map(([k])=>k).join(", ")} · Intervall ${HKEY()?30:90}s · letzte Prüfung ${on[0][1].lastPoll?new Date(on[0][1].lastPoll).toLocaleTimeString("de-DE"):"–"}`:"⚪ Überwachung aus"}
+function monStatus(){const on=Object.entries(nets()).filter(([k,n])=>n.monitor);return on.length?`🟢 Überwachung aktiv für ${on.map(([k])=>k).join(", ")} · Intervall ${HKEY()?30:90}s · ${on.map(([k,n])=>{const c=Object.keys(n.wallets).length,cap=HKEY()?30:8;return c>cap?k+': '+c+' Wallets rotierend ('+cap+'/Runde, voller Durchlauf ≈ '+Math.ceil(c/cap)*(HKEY()?30:90)/60+' min)':''}).filter(Boolean).join(', ')} · letzte Prüfung ${on[0][1].lastPoll?new Date(on[0][1].lastPoll).toLocaleTimeString("de-DE"):"–"}`:"⚪ Überwachung aus"}
 function startMon(){clearInterval(monTimer);if(Object.values(nets()).some(n=>n.monitor)){monTimer=setInterval(monTick,(HKEY()?30:90)*1000);monTick()}}
 /* Replay-Test: historische Tx als „neu“ behandeln */
 async function replayTest(name,wallet,sig){const n=nets()[name];const t=await getTx(sig);const p=parseTx(wallet,t,sig);p.creates.forEach(c=>{const al=lsGet(ALERTED,[]).filter(m=>m!==c.mint);lsSet(ALERTED,al)});p.buys.forEach(b=>{lsSet(ALERTED,lsGet(ALERTED,[]).filter(m=>m!==b.mint))});await evaluate(name,n,wallet,p,{replay:true});return p}
@@ -123,7 +129,14 @@ $("#netNew").onclick=()=>{const v=prompt("Name des neuen Netzwerks:");if(v&&v.tr
 $("#netDel").onclick=()=>{if(!curNet||!confirm(`Netzwerk „${curNet}“ löschen?`))return;const all=nets();delete all[curNet];curNet="";saveNets(all)};
 $("#netAdd").onclick=()=>{const v=$("#netAddIn").value.trim();if(!B58.test(v)||!curNet)return;const all=nets();addMember(all[curNet],v,["member"],"manuell hinzugefügt");$("#netAddIn").value="";saveNets(all)};
 $("#netExp").onclick=async()=>{if(!curNet)return;$("#netExp").disabled=true;await expandNet(curNet,$("#expBox")||$("#netBody"));$("#netExp").disabled=false};
-$("#monBtn").onclick=()=>{const all=nets(),n=all[curNet];if(!n)return;n.monitor=!n.monitor;saveNets(all);startMon()};
+$("#monBtn").onclick=()=>{const all=nets(),n=all[curNet];if(!n)return;n.monitor=!n.monitor;n.autoMon=n.monitor;saveNets(all);startMon()};
 document.querySelector('.tabs button[data-tab="network"]').addEventListener("click",()=>setTimeout(renderNet,0));
-renderNet();startMon();
+/* --- Preset-Netzwerke (mitgeliefert) --- */
+const PRESETS=[{file:"networks/runner-net-2026-10-13.json",name:"Läufer-Netzwerk (3 Tage)"}];
+async function importPreset(pr,force){try{const r=await fetch(pr.file,{cache:"no-cache"});if(!r.ok)return;const d=await r.json();const all=nets();const ex=all[pr.name];const pv=lsGet("otc_preset_ver",{});if(ex&&!force&&pv[pr.name]===d.version)return;
+const n=ex||{wallets:{},edges:[],tokens:{},suggest:[],history:[],mon:{},created:Date.now()};n.preset=pr.file;for(const [a,m] of Object.entries(d.wallets||{})){const o=n.wallets[a]=n.wallets[a]||{roles:[],reasons:[],added:Date.now()};m.roles.forEach(x=>{if(!o.roles.includes(x))o.roles.push(x)});m.reasons.forEach(x=>{if(!o.reasons.includes(x))o.reasons.push(x)});o.src=[...new Set([...(o.src||[]),...(m.src||[])])]}
+(d.edges||[]).forEach(e=>addEdge(n,e.a,e.b,e.t));Object.assign(n.tokens,d.tokens||{});if(n.autoMon!==false){const c=TG();if(c.token&&c.chat){n.monitor=true;n.autoMon=true}}all[pr.name]=n;pv[pr.name]=d.version;lsSet("otc_preset_ver",pv);if(!curNet){curNet=pr.name;localStorage.setItem("otc_net_cur",pr.name)}saveNets(all);startMon();return Object.keys(d.wallets||{}).length}catch(e){console.warn("Preset",e)}}
+async function presetsOnLoad(){for(const pr of PRESETS)await importPreset(pr,false);const all=nets();let ch=false;for(const pr of PRESETS){const n=all[pr.name];if(n&&!n.monitor&&n.autoMon!==false){const c=TG();if(c.token&&c.chat){n.monitor=true;n.autoMon=true;ch=true}}}if(ch){saveNets(all);startMon()}}
+$("#presetBtn").onclick=async()=>{$("#presetBtn").disabled=true;let k=0;for(const pr of PRESETS)k+=await importPreset(pr,true)||0;$("#presetBtn").disabled=false;$("#monState").textContent=`✅ ${k} Wallets aus Preset importiert/aktualisiert. `+monStatus()};
+renderNet();startMon();presetsOnLoad();
 {const p=new URLSearchParams(location.search);if(p.get("tab")==="network")setTimeout(renderNet,50)}

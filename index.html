@@ -44,9 +44,9 @@
 <div class="panel"><label class="glow-s">Bundle-Netzwerk (Solana)</label>
 <div class="row"><select id="netSel"></select><button class="btn small" id="netNew">Neu</button><button class="btn small" id="netDel">Löschen</button></div>
 <div class="row" style="margin-top:10px"><input id="netAddIn" placeholder="Wallet manuell hinzufügen (Solana)" spellcheck="false"><button class="btn small" id="netAdd">Hinzufügen</button></div>
-<div class="row" style="margin-top:10px"><button class="btn" id="netExp">🔎 Netzwerk erweitern (1-Hop + Token-Historie)</button><button class="btn" id="monBtn">▶ Überwachung starten</button></div>
+<div class="row" style="margin-top:10px"><button class="btn" id="netExp">🔎 Netzwerk erweitern (1-Hop + Token-Historie)</button><button class="btn" id="monBtn">▶ Überwachung starten</button><button class="btn small" id="presetBtn">⬇ Läufer-Netzwerk (Preset) neu importieren</button></div>
 <p id="monState" class="muted"></p>
-<p class="hinweis">⚠️ Hinweis: Die Überwachung läuft nur, solange diese Seite in einem Browser-Tab geöffnet ist – <b>Seite offen lassen</b>. Ohne Helius-Key werden max. 8 Wallets alle 90 s geprüft (mit Key 30 Wallets alle 30 s). Alerts gehen an die Telegram-Einstellungen unter ⚙. Alle Zuordnungen sind Indizien, kein Beweis.</p></div>
+<p class="hinweis">⚠️ Hinweis: Die Überwachung läuft nur, solange diese Seite in einem Browser-Tab geöffnet ist – <b>Seite offen lassen</b>. Ohne Helius-Key werden 8 Wallets alle 90 s geprüft, mit Key 30 Wallets alle 30 s – große Netzwerke werden rotierend (Round-Robin) komplett durchgeprüft. Das mitgelieferte „Läufer-Netzwerk (3 Tage)“ wird automatisch geladen und überwacht, sobald Telegram eingerichtet ist (Stopp über den Button). Alerts gehen an die Telegram-Einstellungen unter ⚙. Alle Zuordnungen sind Indizien, kein Beweis.</p></div>
 <div id="netBody"></div>
 <div class="panel sub"><h3 class="glow-s">Funde / Benachrichtigungen</h3><div id="netNotes"></div></div>
 </section>
