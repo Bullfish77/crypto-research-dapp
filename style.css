@@ -57,3 +57,8 @@ select{background:#020a1c;border:1px solid #3a8cff;color:#cfeaff;padding:10px;bo
 .stsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stk{border:1px solid #2a7fff55;border-radius:8px;padding:8px;text-align:center}.stk span{display:block;font-size:.8em;opacity:.75}.stk b{font-size:1.1em}
 .strow{display:flex;gap:10px;align-items:center;border-bottom:1px solid #2a7fff33;padding:8px 0}.strk{width:26px;text-align:center;font-weight:bold;opacity:.8}.stmain{flex:1;min-width:0;overflow-wrap:anywhere}.stx{text-align:right;display:flex;flex-direction:column;min-width:64px}.stx b{font-size:1.25em;color:#5cffb0}.sttag{font-size:.75em;border:1px solid #b18cff;border-radius:6px;padding:0 4px;color:#b18cff}.stf select{flex:1;min-width:110px}
 @media(max-width:600px){.strow{gap:6px}.stx b{font-size:1.1em}}
+
+.ca{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0}
+.ca code{font-size:12px;word-break:break-all;user-select:all;-webkit-user-select:all;background:rgba(80,160,255,.12);padding:3px 6px;border-radius:6px;flex:1 1 220px}
+.cpy{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #3a7bd5;background:#12233d;color:#cfe3ff;cursor:pointer;white-space:nowrap}
+.cpy.ok{background:#14532d;border-color:#22c55e;color:#dcfce7}
