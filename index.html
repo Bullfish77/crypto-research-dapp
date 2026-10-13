@@ -22,7 +22,7 @@
 <p class="hinweis">⚠️ Hinweis: Alerts laufen nur, solange diese Seite in einem Browser-Tab geöffnet ist (Prüfung jede Minute + direkt beim Laden). <b>Seite offen lassen</b>. Bot-Token &amp; Chat-ID werden nur lokal in deinem Browser gespeichert.</p>
 <button id="setClose" class="btn small">Schließen</button></div>
 <p id="keyHint" class="keyhint" hidden>Öffentliches RPC war limitiert – für bessere Ergebnisse <a href="#" onclick="document.getElementById('settings').hidden=false;return false">Helius-Key eintragen</a>.</p>
-<nav class="tabs"><button data-tab="tx" class="on">Transaktion</button><button data-tab="token">Token-Analyse</button><button data-tab="wallet">Wallet</button><button data-tab="bought">Ich habe gekauft</button><button data-tab="network">Bundle-Netzwerk</button><button data-tab="runner">Läufer 🟢</button></nav>
+<nav class="tabs"><button data-tab="tx" class="on">Transaktion</button><button data-tab="token">Token-Analyse</button><button data-tab="wallet">Wallet</button><button data-tab="bought">Ich habe gekauft</button><button data-tab="network">Bundle-Netzwerk</button><button data-tab="runner">Läufer 🟢</button><button data-tab="stats">Statistik 📊</button></nav>
 <main>
 <section id="tab-tx" class="tab">
 <form id="f" class="panel"><label for="h" class="glow-s">Transaktion oder Adresse eingeben (Bitcoin, Ethereum oder Solana)</label>
@@ -96,4 +96,17 @@
 <label>Max. Ø Trade-Größe ($, Wash-Filter)<input name="maxAvgTrade" type="number"></label>
 <div class="row"><button class="btn small" type="submit">Speichern</button><button class="btn small" type="button" id="runReset">Standard</button></div><p id="runCfgMsg" class="muted"></p></form></details>
 </section>
-</main><script src="app.js"></script><script src="research.js"></script><script src="network.js"></script><script src="runner.js"></script></body></html>
+<section id="tab-stats" class="tab" hidden>
+<div class="panel"><label class="glow-s">Alert-Performance 📊</label>
+<div class="row stf"><select id="stPeriod"><option value="24h">24 h</option><option value="7d" selected>7 Tage</option><option value="all">Gesamt</option></select><select id="stType"><option value="all">Alle Typen</option><option value="lvl">Läufer 🟢</option><option value="early">🚀 Early</option><option value="turbo">⚡ Turbo</option><option value="cf">✅ Bestätigt</option></select><button class="btn small" id="stRefresh">🔄 Aktualisieren</button></div>
+<div id="stSum" class="stsum"></div>
+<p class="muted small">Erfasst wird jeder Coin beim ersten Läufer-/Turbo-/Early-/Bestätigt-Alert (MCap beim Alert). Peak = höchste MCap danach (DexScreener alle 2 min für 48 h + GeckoTerminal-Kerzen-Hoch). Status 🚨 Rug: ≥ 80 % unter Peak oder RUG-Alarm. „Replay“ = nachträglich analysierte Fallstudien vom 13.10. (Werte gerundet).</p></div>
+<div class="panel sub"><h3 class="glow-s">Top 20 nach Peak-x</h3><div id="stBody"></div></div>
+<div class="panel sub"><h3 class="glow-s">🤖 Telegram-Befehle</h3>
+<p class="small">Schreibe dem Bot <code>/top20</code>, <code>/top</code>, <code>/stats</code> oder <code>/hilfe</code> (optional mit <code>24h</code>/<code>7d</code>/<code>all</code>). Es wird nur in deinem gespeicherten Chat bzw. Runner-Kanal geantwortet.</p>
+<p class="hinweis">⚠️ Der Bot antwortet nur, solange diese Seite geöffnet ist (Abfrage per getUpdates im Browser).</p>
+<label class="tog"><input type="checkbox" id="stCmds"> Befehle beantworten</label>
+<label class="tog"><input type="checkbox" id="stDaily"> Tägliche Zusammenfassung um</label> <input id="stTime" type="time" value="20:00">
+<div class="row" style="margin-top:8px"><button class="btn small" id="stReg">Befehle beim Bot registrieren</button><button class="btn small" id="stSendTop">Top 20 jetzt senden</button></div><p id="stBotMsg" class="muted small"></p></div>
+</section>
+</main><script src="app.js"></script><script src="research.js"></script><script src="network.js"></script><script src="runner.js"></script><script src="stats.js"></script></body></html>
