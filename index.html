@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OTC TX Tracker</title><link rel="stylesheet" href="style.css"></head><body>
+<canvas id="bg"></canvas>
+<header><h1 class="glow">OTC TX TRACKER</h1><div class="hdr"><span id="rpcBadge" class="badge2 off">Öffentliches RPC</span><button id="gear" class="btn small" title="Einstellungen" aria-label="Einstellungen">⚙</button><button id="wallet" class="btn small">Wallet verbinden</button></div></header>
+<div id="settings" class="panel settings" hidden><h3 class="glow-s">Einstellungen</h3>
+<label for="keyIn">Helius API-Key (optional)</label><div class="row"><input id="keyIn" type="password" placeholder="Helius API-Key einfügen" autocomplete="off" spellcheck="false"><button id="keySave" class="btn small">Speichern</button><button id="keyDel" class="btn small">Löschen</button></div>
+<p id="keyStatus" class="muted"></p><p id="keyMsg"></p>
+<p class="muted">Der Key wird nur lokal in deinem Browser (localStorage) gespeichert und ausschließlich an Helius gesendet – nie an uns oder in die URL. Kostenlosen Key gibt es unter <a href="https://dashboard.helius.dev/" target="_blank" rel="noopener">dashboard.helius.dev</a>. Mit Key: vollständige Historie, genauere Creator-Erkennung, Token-Namen, Holdings und mehr analysierte Transaktionen.</p>
+<hr class="sep"><h3 class="glow-s">Telegram-Alerts</h3>
+<ol class="muted small"><li>In Telegram <b>@BotFather</b> öffnen, <code>/newbot</code> senden und den Bot-Token kopieren.</li><li>Deinem neuen Bot <b>„Hallo“</b> schreiben.</li><li>Token hier eintragen und <b>„Chat-ID automatisch finden“</b> klicken, dann Testnachricht senden und speichern.</li></ol>
+<label for="tgToken">Bot-Token</label><input id="tgToken" type="password" placeholder="123456789:AA…" autocomplete="off" spellcheck="false">
+<label for="tgChat">Chat-ID</label><div class="row"><input id="tgChat" placeholder="z. B. 123456789" autocomplete="off"><button id="tgFind" class="btn small">Chat-ID automatisch finden</button></div>
+<label class="tog"><input type="checkbox" id="tgOn"> Alerts aktiv</label>
+<div class="row"><button id="tgTest" class="btn small">Testnachricht senden</button><button id="tgSave" class="btn small">Speichern</button><button id="tgDel" class="btn small">Löschen</button></div>
+<p id="tgState" class="muted"></p><p id="tgMsg"></p>
+<p class="hinweis">⚠️ Hinweis: Alerts laufen nur, solange diese Seite in einem Browser-Tab geöffnet ist (Prüfung jede Minute + direkt beim Laden). <b>Seite offen lassen</b>. Bot-Token &amp; Chat-ID werden nur lokal in deinem Browser gespeichert.</p>
+<button id="setClose" class="btn small">Schließen</button></div>
+<p id="keyHint" class="keyhint" hidden>Öffentliches RPC war limitiert – für bessere Ergebnisse <a href="#" onclick="document.getElementById('settings').hidden=false;return false">Helius-Key eintragen</a>.</p>
+<nav class="tabs"><button data-tab="tx" class="on">Transaktion</button><button data-tab="token">Token-Analyse</button><button data-tab="wallet">Wallet</button><button data-tab="bought">Ich habe gekauft</button><button data-tab="network">Bundle-Netzwerk</button></nav>
+<main>
+<section id="tab-tx" class="tab">
+<form id="f" class="panel"><label for="h" class="glow-s">Transaktion oder Adresse eingeben (Bitcoin, Ethereum oder Solana)</label>
+<div class="row"><input id="h" placeholder="Tx-Hash / Signatur – oder Token-/Wallet-Adresse (wird automatisch erkannt)" autocomplete="off" spellcheck="false"><button class="btn" type="submit">Verfolgen</button></div>
+<div id="msg"></div></form>
+<div id="stage" hidden><canvas id="anim"></canvas><button id="skip" class="btn small">Überspringen ⏭</button></div>
+<section id="card" class="panel card" hidden></section>
+</section>
+<section id="tab-token" class="tab" hidden>
+<form id="tokF" class="panel"><label for="tokIn" class="glow-s">Token-Adresse (Solana-Mint, optional Ethereum-Contract)</label>
+<div class="row"><input id="tokIn" placeholder="z. B. …pump (Solana-Mint) oder 0x… (ERC-20)" autocomplete="off" spellcheck="false"><button class="btn" type="submit">Analysieren</button></div>
+<p class="muted">Prüft Creator, Mint-/Freeze-Authority, Top-Holder, Bundles (gleicher Slot), Funding-Cluster und Rug-Signale. Öffentliche RPCs sind limitiert – die Analyse dauert ca. 30–90 s.</p></form>
+<div id="tokOut"></div></section>
+<section id="tab-wallet" class="tab" hidden>
+<form id="walF" class="panel"><label for="walIn" class="glow-s">Wallet-Adresse (Solana, Ethereum oder Bitcoin)</label>
+<div class="row"><input id="walIn" placeholder="Solana-Base58, 0x… oder bc1…/1…/3…" autocomplete="off" spellcheck="false"><button class="btn" type="submit">Ansehen</button></div></form>
+<div class="panel sub"><h3 class="glow-s">Beobachtete Wallets</h3><div id="watchlist"></div><p class="muted">Gespeichert lokal in deinem Browser; wird jede Minute geprüft, solange die Seite offen ist. Telegram-Alerts unter ⚙ Einstellungen – <b>Seite offen lassen</b>.</p></div>
+<div id="walOut"></div></section>
+<section id="tab-bought" class="tab" hidden>
+<form id="buyF" class="panel"><label class="glow-s">Ich habe diesen Coin gekauft (Solana)</label>
+<div class="col"><input id="buyTok" placeholder="Token-Mint-Adresse" autocomplete="off" spellcheck="false"><input id="buyTx" placeholder="Optional: Signatur deines Kaufs" autocomplete="off" spellcheck="false"><button class="btn" type="submit">Wer hat verkauft?</button></div>
+<p class="muted">Zeigt, wer dir verkauft hat, wer danach abgestoßen hat, plus die komplette Token-Analyse.</p></form>
+<div id="buyOut"></div></section>
+<section id="tab-network" class="tab" hidden>
+<div class="panel"><label class="glow-s">Bundle-Netzwerk (Solana)</label>
+<div class="row"><select id="netSel"></select><button class="btn small" id="netNew">Neu</button><button class="btn small" id="netDel">Löschen</button></div>
+<div class="row" style="margin-top:10px"><input id="netAddIn" placeholder="Wallet manuell hinzufügen (Solana)" spellcheck="false"><button class="btn small" id="netAdd">Hinzufügen</button></div>
+<div class="row" style="margin-top:10px"><button class="btn" id="netExp">🔎 Netzwerk erweitern (1-Hop + Token-Historie)</button><button class="btn" id="monBtn">▶ Überwachung starten</button></div>
+<p id="monState" class="muted"></p>
+<p class="hinweis">⚠️ Hinweis: Die Überwachung läuft nur, solange diese Seite in einem Browser-Tab geöffnet ist – <b>Seite offen lassen</b>. Ohne Helius-Key werden max. 8 Wallets alle 90 s geprüft (mit Key 30 Wallets alle 30 s). Alerts gehen an die Telegram-Einstellungen unter ⚙. Alle Zuordnungen sind Indizien, kein Beweis.</p></div>
+<div id="netBody"></div>
+<div class="panel sub"><h3 class="glow-s">Funde / Benachrichtigungen</h3><div id="netNotes"></div></div>
+</section>
+</main><script src="app.js"></script><script src="research.js"></script><script src="network.js"></script></body></html>
