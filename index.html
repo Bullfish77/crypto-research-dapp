@@ -129,11 +129,13 @@
 <div class="panel"><label class="glow-s">Einstellungen</label>
 <form id="trCfgF" class="trcfg">
 <label>Kaufbetrag (SOL/Coin)<input name="buySol" type="number" step="0.001" min="0.001"></label><label>Take-Profit %<input name="tp" type="number" step="1"></label><label>Stop-Loss %<input name="sl" type="number" step="1"></label><label>Trailing-Stop % (0 = aus)<input name="trail" type="number" step="1"></label><label>Slippage %<input name="slip" type="number" step="1"></label><label>Priority-Fee (SOL)<input name="prio" type="number" step="0.0001"></label><label>Max. offene Positionen<input name="maxPos" type="number" step="1" min="1"></label><label>Tageslimit (SOL)<input name="dayMax" type="number" step="0.01"></label>
+<fieldset><legend>Einstieg</legend><label class="tog"><input type="checkbox" name="dip"> ⏳ Auf Dip warten (aus = sofort kaufen)</label><label>Dip vom Hoch %<input name="dipPct" type="number" step="1" min="5"></label><label>Timeout (min)<input name="dipTmo" type="number" step="1" min="5"></label><label>Abbruch bei −% unter Signal<input name="dipFloor" type="number" step="1" min="10"></label></fieldset>
 <fieldset><legend>Kaufen bei</legend><label class="tog"><input type="checkbox" name="t_fr"> 🟢 FRÜH-LÄUFER</label><label class="tog"><input type="checkbox" name="t_tb"> ⚡ TURBO</label><label class="tog"><input type="checkbox" name="t_cf"> ✅ BESTÄTIGT</label><label class="tog"><input type="checkbox" name="t_rb"> 🔁 REBUY</label><label class="tog"><input type="checkbox" name="t_er"> 🚀 EARLY</label><label class="tog"><input type="checkbox" name="t_lvl"> Läufer-Stufen</label></fieldset>
 <fieldset><legend>Überspringen</legend><label class="tog"><input type="checkbox" name="skipRug"> Rug-/Holder-Warnungen</label><label class="tog"><input type="checkbox" name="skipSniper"> 🚫 Sniper-/Liquiditäts-Sperre</label><label class="tog"><input type="checkbox" name="skipAnon"> Anonymer Launch</label><label class="tog"><input type="checkbox" name="onePer"> Nur 1 Kauf pro Coin</label></fieldset>
 <label class="tog live"><input type="checkbox" name="live"> 💸 LIVE-Modus (echtes SOL!) – sonst 🧪 Simulation</label>
 <button>Speichern</button> <span id="trMsg" class="small"></span></form>
 </div>
+<div class="panel"><label class="glow-s">⏳ Wartet auf Dip</label><div id="trWait"></div></div>
 <div class="panel"><label class="glow-s">Offene Positionen</label><div id="trPos"></div></div>
 <div class="panel"><label class="glow-s">Historie</label><div id="trTot" class="small"></div><div id="trHist"></div><button type="button" id="trReset" class="small">SIM-Daten löschen</button></div>
 <div class="panel"><label class="glow-s">Protokoll</label><pre id="trLog" class="trlog"></pre><p class="small muted">Keine Finanzberatung.</p></div>
