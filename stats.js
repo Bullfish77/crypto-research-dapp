@@ -22,7 +22,7 @@ function stMark(mint,f){const a=stLoad();const r=a.find(x=>x.mint===mint);if(r){
 function stApply(r,p,now){const mc=p.marketCap||p.fdv||0;if(!mc)return false;if(p.baseToken?.symbol&&(r.sym==="?"||!r.sym)){r.sym=p.baseToken.symbol;r.name=p.baseToken.name||r.name}r.curMc=mc;r.lastAt=now||Date.now();if(+p.priceUsd)r.sup=mc/ +p.priceUsd;if(mc>(r.peakMc||0)){r.peakMc=mc;r.peakAt=r.lastAt}return true}
 function stStatus(r){const pk=r.peakMc/r.mc,cur=r.curMc/r.mc;if(r.rug||(r.curMc&&r.curMc<=r.peakMc*0.2))return"🚨 Rug";if(pk>=2&&cur>=pk*0.5)return"🏃 Läufer";if(pk>=2)return"📉 Gelaufen, gefallen";if(cur<0.5)return"📉 Gefallen";return"⏳ Offen"}
 function stView(a,period,type,now){now=now||Date.now();const lim={"24h":864e5,"7d":7*864e5}[period];return a.filter(r=>(!lim||now-r.at<=lim)&&(!type||type==="all"||stTypeKey(r.type)===type)).map(r=>({...r,x:r.peakMc/r.mc,cx:(r.curMc||0)/r.mc,st:stStatus(r)})).sort((p,q)=>q.x-p.x)}
-const stTypeKey=t=>/Turbo/i.test(t)?"turbo":/Early/i.test(t)?"early":/BEST/i.test(t)?"cf":"lvl";
+const stTypeKey=t=>/Früh/i.test(t)?"frueh":/Turbo/i.test(t)?"turbo":/Early/i.test(t)?"early":/BEST/i.test(t)?"cf":"lvl";
 function stSummary(v){const n=v.length,xs=v.map(r=>r.x).sort((a,b)=>a-b);const med=n?(n%2?xs[(n-1)/2]:(xs[n/2-1]+xs[n/2])/2):0;const c=k=>v.filter(r=>r.x>=k).length;return{n,x2:c(2),x5:c(5),x10:c(10),rug:v.filter(r=>r.st==="🚨 Rug").length,med}}
 const xf=x=>(x>=10?x.toFixed(0):x.toFixed(x>=2?1:2))+"×",pct=(k,n)=>n?Math.round(k/n*100)+"%":"–";
 const stTime=t=>new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
@@ -37,6 +37,7 @@ stMark(r.mint,x=>{x.gtAt=Date.now();const pm=hi*x.sup;if(pm>(x.peakMc||0)&&pm<x.
 /* Hooks in die Alert-Funktionen */
 if(typeof runAlert==="function"){const f=runAlert;runAlert=async function(s,p,r){const ok=await f(s,p,r);stRecord(s.mint,p,"Läufer "+LVL_TXT[r.lvl],r.lvl,ok);return ok}}
 if(typeof tbAlert==="function"){const f=tbAlert;tbAlert=async function(x,t){const ok=await f(x,t);stRecord(x.mint,x.p,"⚡ Turbo",0,ok);return ok}}
+if(typeof frAlert==="function"){const f=frAlert;frAlert=async function(x,e){const ok=await f(x,e);stRecord(x.mint,x.p,"🟢 Früh-Läufer",0,ok);return ok}}
 if(typeof erAlert==="function"){const f=erAlert;erAlert=async function(x,e){const ok=await f(x,e);stRecord(x.mint,x.p,"🚀 Early",0,ok);return ok}}
 if(typeof followSend==="function"){const f=followSend;followSend=async function(x,text,kind){const ok=await f(x,text,kind);if(/BESTÄTIGT/i.test(kind||""))stRecord(x.mint,x.p,"✅ Bestätigt",0,ok);if(/RUG/i.test(kind||""))stMark(x.mint,r=>r.rug=true);return ok}}
 /* Telegram-Texte */
