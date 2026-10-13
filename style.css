@@ -68,3 +68,8 @@ select{background:#020a1c;border:1px solid #3a8cff;color:#cfeaff;padding:10px;bo
 .trcfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.trcfg label{font-size:12px;display:flex;flex-direction:column;gap:3px}.trcfg fieldset{grid-column:1/-1;border:1px solid #334;border-radius:8px}.trcfg .tog{flex-direction:row}.trcfg .live{grid-column:1/-1;color:#fca5a5;font-weight:bold}
 .trt{width:100%;border-collapse:collapse;font-size:12px}.trt td,.trt th{border-bottom:1px solid #223;padding:4px;text-align:left;vertical-align:top}.grn{color:#4ade80}.red{color:#f87171}.sm{font-size:11px}
 .trlog{max-height:200px;overflow:auto;font-size:11px;white-space:pre-wrap}.exp{display:block;word-break:break-all;background:#3b0a0a;padding:8px;border-radius:6px;margin-top:6px}#trQr{background:#fff;border-radius:8px;margin:6px 0}
+
+.chBtn{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #3a7bd5;background:#12233d;color:#cfe3ff;margin-top:4px}
+.chBox{margin-top:6px;border:1px solid #233;border-radius:10px;overflow:hidden;background:#0b1220}.chBox iframe{width:100%;height:340px;border:0;display:block}
+.chTabs{display:flex;gap:6px;align-items:center;padding:6px}.chTabs button{font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #334;background:#111a2b;color:#cfe3ff}.chTabs button.on{background:#1d4ed8}.chTabs a{margin-left:auto;font-size:12px}
+.chBox canvas{width:100%;display:block}.chInfo{padding:4px 6px}
