@@ -97,3 +97,19 @@ trInit();
 
 function trBeatUI(){const st=$("#trState");if(!st)return;let e=$("#trBeat");if(!e){e=document.createElement("div");e.id="trBeat";e.className="small muted";st.after(e)}const s=Math.round((Date.now()-trBeat)/1e3);e.textContent=(s>30?"⚠️ ":"💓 ")+"letzter Check vor "+s+" s"+(trBusy?" · läuft …":"")}
 setInterval(trBeatUI,1000);
+/* ===== 📤 Export (kein Wallet-Schlüssel!) ===== */
+function trExport(){const c=trCfg();const cfg={...c};delete cfg.key;delete cfg.pk;delete cfg.secret;
+ const r2=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
+ const alerts=(typeof stLoad==="function"?stLoad():[]).map(r=>({t:new Date(r.at).toISOString(),mint:r.mint,sym:r.sym,type:r.type,lvl:r.lvlMax||r.lvl,src:r.src,mcAlert:Math.round(r.mc||0),peakMc:Math.round(r.peakMc||0),maxX:r2(r.peakMc/r.mc),minMc:Math.round(r.minMc||r.curMc||0),minX:r2((r.minMc||r.curMc)/r.mc),minBeforePeakX:r2((r.minBeforePeak||r.mc)/r.mc),peakAfterMin:r.peakAt?Math.round((r.peakAt-r.at)/6e4):null,curMc:Math.round(r.curMc||0),curX:r2(r.curMc/r.mc),rug:!!r.rug,status:typeof stStatus==="function"?stStatus(r):""}));
+ const trades=trHist().map(h=>({live:h.live,sym:h.sym,mint:h.mint,why:h.why,buy:new Date(h.tBuy).toISOString(),sell:new Date(h.tSell).toISOString(),holdMin:Math.round((h.tSell-h.tBuy)/6e4),entryMc:Math.round(h.entryMc||0),solIn:r2(h.solIn),solOut:r2(h.solOut),pnlPct:r2(h.pnlPct),peakPct:r2(h.peak),reason:h.reason}));
+ const pos=trPos().map(p=>({live:p.live,sym:p.sym,mint:p.mint,why:p.why,buy:new Date(p.tBuy).toISOString(),entryMc:Math.round(p.entryMc||0),mc:Math.round(p.mc||0),pnlPct:r2(p.pnlPct),peakPct:r2(p.peak),solIn:r2(p.solIn)}));
+ const wait=trWait().map(w=>({sym:w.sym,mint:w.mint,label:w.label,since:new Date(w.t0).toISOString(),signalMc:Math.round(w.p0*chSup(w.mint)),highMc:Math.round(w.H*chSup(w.mint)),armed:!!w.armed}));
+ return {exportedAt:new Date().toISOString(),app:"crypto-research-dapp",note:"Keine Finanzberatung. Kein Wallet-Schlüssel enthalten.",settings:cfg,positions:pos,waitingDip:wait,trades,alerts,log:TR_LOG.slice(0,60)}}
+function trCsv(rows){if(!rows.length)return "";const k=Object.keys(rows[0]);const q=v=>{v=v==null?"":String(v);return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};return k.join(",")+"\n"+rows.map(r=>k.map(x=>q(r[x])).join(",")).join("\n")}
+function trDl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function trExpMsg(t){const e=$("#trExpMsg");if(e){e.textContent=t;setTimeout(()=>{if(e.textContent===t)e.textContent=""},4000)}}
+document.addEventListener("click",async e=>{const id=e.target?.id;if(!/^trExp(Copy|Json|Csv)$/.test(id||""))return;try{const X=trExport(),d=new Date().toISOString().slice(0,16).replace(/[:T]/g,"-");
+ if(id==="trExpJson")trDl(`agent-export-${d}.json`,JSON.stringify(X,null,1),"application/json");
+ else if(id==="trExpCsv")trDl(`agent-export-${d}.csv`,"# TRADES\n"+trCsv(X.trades)+"\n\n# POSITIONEN\n"+trCsv(X.positions)+"\n\n# DIP-WARTELISTE\n"+trCsv(X.waitingDip)+"\n\n# ALERTS\n"+trCsv(X.alerts)+"\n","text/csv");
+ else{const t="AGENT-EXPORT "+X.exportedAt+"\nSETTINGS "+JSON.stringify(X.settings)+"\n\nTRADES\n"+trCsv(X.trades)+"\n\nPOSITIONEN\n"+trCsv(X.positions)+"\n\nDIP\n"+trCsv(X.waitingDip)+"\n\nALERTS\n"+trCsv(X.alerts);try{await navigator.clipboard.writeText(t)}catch(_){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}}
+ trExpMsg("✅ "+X.trades.length+" Trades, "+X.positions.length+" Positionen, "+X.alerts.length+" Alerts")}catch(err){trExpMsg("❌ "+err.message)}});
