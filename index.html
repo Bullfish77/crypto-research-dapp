@@ -16,7 +16,7 @@
 <p class="hinweis">⚠️ Hinweis: Alerts laufen nur, solange diese Seite in einem Browser-Tab geöffnet ist (Prüfung jede Minute + direkt beim Laden). <b>Seite offen lassen</b>. Bot-Token &amp; Chat-ID werden nur lokal in deinem Browser gespeichert.</p>
 <button id="setClose" class="btn small">Schließen</button></div>
 <p id="keyHint" class="keyhint" hidden>Öffentliches RPC war limitiert – für bessere Ergebnisse <a href="#" onclick="document.getElementById('settings').hidden=false;return false">Helius-Key eintragen</a>.</p>
-<nav class="tabs"><button data-tab="tx" class="on">Transaktion</button><button data-tab="token">Token-Analyse</button><button data-tab="wallet">Wallet</button><button data-tab="bought">Ich habe gekauft</button><button data-tab="network">Bundle-Netzwerk</button></nav>
+<nav class="tabs"><button data-tab="tx" class="on">Transaktion</button><button data-tab="token">Token-Analyse</button><button data-tab="wallet">Wallet</button><button data-tab="bought">Ich habe gekauft</button><button data-tab="network">Bundle-Netzwerk</button><button data-tab="runner">Läufer 🟢</button></nav>
 <main>
 <section id="tab-tx" class="tab">
 <form id="f" class="panel"><label for="h" class="glow-s">Transaktion oder Adresse eingeben (Bitcoin, Ethereum oder Solana)</label>
@@ -50,4 +50,30 @@
 <div id="netBody"></div>
 <div class="panel sub"><h3 class="glow-s">Funde / Benachrichtigungen</h3><div id="netNotes"></div></div>
 </section>
-</main><script src="app.js"></script><script src="research.js"></script><script src="network.js"></script></body></html>
+<section id="tab-runner" class="tab" hidden>
+<div class="panel"><label class="glow-s">Läufer-Signale (Solana) 🟢 → 🟢🟢🟢🟢</label>
+<form id="runAddF" class="row"><input id="runAdd" placeholder="Token beobachten: Solana-Mint einfügen" spellcheck="false" autocomplete="off"><button class="btn small" type="submit">Beobachten</button></form>
+<div class="row" style="margin-top:10px"><button class="btn small" id="runNow">🔄 Jetzt prüfen</button><button class="btn small" id="runToggle">⏯ Start/Pause</button></div>
+<p id="runState" class="muted"></p>
+<p class="muted small">Beobachtet automatisch: Coins aus Bundle-Netzwerk-Funden, alle analysierten Solana-Coins und deine manuelle Liste. Daten von DexScreener (max. 30 Coins pro Abfrage). Telegram-Alert (getrennt von Launch-Alerts) nur, wenn ein Coin eine <b>neue höhere Stufe</b> erreicht.</p>
+<ol id="runLevels" class="small"></ol>
+<p class="hinweis">⚠️ Keine Finanzberatung. Volumen, Käufe und Trending lassen sich mit Bots fälschen; Scores sind Indizien, keine Kaufsignale. Läuft nur bei offener Seite.</p></div>
+<div id="runBody"></div>
+<div class="panel sub"><h3 class="glow-s">Läufer-Alerts</h3><div id="runLog"></div></div>
+<details class="panel sub"><summary class="glow-s">⚙ Läufer-Einstellungen &amp; Schwellen</summary>
+<form id="runCfg" class="cfg"><label class="tog"><input type="checkbox" name="on"> Läufer-Signale aktiv</label>
+<label>Min. Stufe für Telegram (1–4)<input name="minLvl" type="number" min="1" max="4"></label>
+<label>Cooldown zwischen Alerts je Coin (min)<input name="cooldownMin" type="number" min="0"></label>
+<label>Prüf-Intervall (s, min. 30)<input name="interval" type="number" min="30"></label>
+<label>Min. Liquidität ($)<input name="minLiq" type="number"></label>
+<label>Min. MCap ($)<input name="minMc" type="number"></label>
+<label>Score-Schwellen 🟢,🟢🟢,🟢🟢🟢,🟢🟢🟢🟢<input name="lvl"></label>
+<label>MCap-Mindestwerte je Stufe ($)<input name="gateMc"></label>
+<label>Ziel Vol 5m / MCap (0.05 = 5 %)<input name="turn5" type="number" step="0.01"></label>
+<label>Ziel Vol 1h / MCap (0.5 = 50 %)<input name="turn1h" type="number" step="0.05"></label>
+<label>Ziel Txns pro 5 min<input name="minTx5" type="number"></label>
+<label>Min. Kauf-Anteil 5m (0.6 = 60 %)<input name="buyRatio" type="number" step="0.01"></label>
+<label>Max. Ø Trade-Größe ($, Wash-Filter)<input name="maxAvgTrade" type="number"></label>
+<div class="row"><button class="btn small" type="submit">Speichern</button><button class="btn small" type="button" id="runReset">Standard</button></div><p id="runCfgMsg" class="muted"></p></form></details>
+</section>
+</main><script src="app.js"></script><script src="research.js"></script><script src="network.js"></script><script src="runner.js"></script></body></html>
