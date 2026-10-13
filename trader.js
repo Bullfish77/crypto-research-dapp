@@ -2,7 +2,7 @@
    Sicherheit: Schlüssel nur im Browser (localStorage, AES-GCM verschlüsselt, PBKDF2 250k), entsperrt nur im Speicher dieser Sitzung.
    Es verlassen den Browser nur signierte Transaktionen (an RPC) sowie öffentliche Daten (Adresse/Mint an Jupiter/PumpPortal/DexScreener). Keine Finanzberatung. */
 const TR_CFG="otc_trader_cfg",TR_POS="otc_trader_pos",TR_HIST="otc_trader_hist",TR_W="otc_trader_wallet",TR_LOG=[];
-const TR_DEF={live:false,on:false,buySol:0.05,tp:100,sl:30,trail:0,slip:15,prio:0.0002,maxPos:3,dayMax:0.3,trig:{fr:true,tb:true,cf:true,er:false,lvl:false,rb:false},skipRug:true,skipSniper:true,skipAnon:false,onePer:true,dip:true,dipPct:20,dipTmo:30,dipFloor:40};
+const TR_DEF={live:false,on:false,buySol:0.05,tp:150,sl:40,trail:0,slip:15,prio:0.0002,maxPos:3,dayMax:0.3,trig:{fr:true,tb:true,cf:true,er:false,lvl:false,rb:false},skipRug:true,skipSniper:true,skipAnon:false,onePer:true,dip:false,dipPct:20,dipTmo:30,dipFloor:40};
 const trCfg=()=>{const o={...TR_DEF,...rLs(TR_CFG,{})};o.trig={...TR_DEF.trig,...(o.trig||{})};return o};
 const trF=(u,o)=>fetch(u,{...(o||{}),signal:AbortSignal.timeout(20000)});let trBeat=0,trBusyAt=0;let W3=null,BS58=null,trKP=null,trTimer=null,trBusy=false,trSol=0,trSolAt=0;const trPending=new Set();
 async function trLibs(){if(!W3){W3=await import("https://esm.sh/@solana/web3.js@1.95.3");BS58=(await import("https://esm.sh/bs58@6.0.0")).default}return W3}
@@ -113,3 +113,7 @@ document.addEventListener("click",async e=>{const id=e.target?.id;if(!/^trExp(Co
  else if(id==="trExpCsv")trDl(`agent-export-${d}.csv`,"# TRADES\n"+trCsv(X.trades)+"\n\n# POSITIONEN\n"+trCsv(X.positions)+"\n\n# DIP-WARTELISTE\n"+trCsv(X.waitingDip)+"\n\n# ALERTS\n"+trCsv(X.alerts)+"\n","text/csv");
  else{const t="AGENT-EXPORT "+X.exportedAt+"\nSETTINGS "+JSON.stringify(X.settings)+"\n\nTRADES\n"+trCsv(X.trades)+"\n\nPOSITIONEN\n"+trCsv(X.positions)+"\n\nDIP\n"+trCsv(X.waitingDip)+"\n\nALERTS\n"+trCsv(X.alerts);try{await navigator.clipboard.writeText(t)}catch(_){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}}
  trExpMsg("✅ "+X.trades.length+" Trades, "+X.positions.length+" Positionen, "+X.alerts.length+" Alerts")}catch(err){trExpMsg("❌ "+err.message)}});
+
+/* Backtest 13.10.2026 (50 Coins, FRÜH 16 / TURBO 9 / REBUY 27 Alerts): TP 150 / SL 40 / kein Trailing / sofort kaufen schlägt 100/30 + Dip bei allen drei Auslösern */
+const TR_REC={tp:150,sl:40,trail:0,dip:false};
+document.addEventListener("click",e=>{if(e.target?.id!=="trRec")return;const c={...trCfg(),...TR_REC};const {...save}=c;rLsSet(TR_CFG,save);trCfgUI();trRender();const m=$("#trMsg");if(m)m.textContent="✅ Empfohlene Einstellungen übernommen (TP 150 %, SL 40 %, Trailing aus, sofort kaufen)"});
