@@ -66,7 +66,7 @@ if(Date.now()-runGeckoAt>120000){runGeckoAt=Date.now();const g=await Promise.all
 runFeedGecko.forEach(add);runFeedList=[...set].slice(0,c.feedMax);runFeedAt=Date.now()}
 /* Rate-Limit-Schutz: Mindestabstand je Host + 429-Backoff (30 s, verdoppelnd bis 5 min). Gesperrt -> Antwort 429 ohne Request. */
 const RL={"api.geckoterminal.com":{gap:2500},"api.dexscreener.com":{gap:150}};
-async function rfetch(u,o){const h=new URL(u).host,L=RL[h]||(RL[h]={gap:0});const now=Date.now();if(L.until>now)return new Response("",{status:429});const at=Math.max(now,L.next||0);L.next=at+L.gap;if(at>now)await new Promise(r=>setTimeout(r,at-now));try{const r=await fetch(u,o);if(r.status===429){L.bo=Math.min((L.bo||15e3)*2,3e5);L.until=Date.now()+L.bo;console.warn("429",h,"Pause",L.bo/1e3,"s")}else if(r.ok)L.bo=0;return r}catch(e){throw e}}
+async function rfetch(u,o,prio){const h=new URL(u).host,L=RL[h]||(RL[h]={gap:0});const now=Date.now();if(L.until>now)return new Response("",{status:429});/* prio (offenes Chart): sofort, Hintergrund-Scan rückt nach */const at=prio?now:Math.max(now,L.next||0);if(prio)L.next=Math.max(L.next||0,now)+L.gap;else L.next=at+L.gap;if(at>now)await new Promise(r=>setTimeout(r,at-now));try{const r=await fetch(u,o);if(r.status===429){L.bo=Math.min((L.bo||15e3)*2,3e5);L.until=Date.now()+L.bo;console.warn("429",h,"Pause",L.bo/1e3,"s")}else if(r.ok)L.bo=0;return r}catch(e){throw e}}
 let runErAt=0,runErBusy=false;
 let runFeedGecko=[];
 /* Analyse-Ergebnisse (Top-10, Flags) mitschneiden */
