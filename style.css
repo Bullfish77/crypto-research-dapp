@@ -80,3 +80,4 @@ select{background:#020a1c;border:1px solid #3a8cff;color:#cfeaff;padding:10px;bo
 .chTabs button:disabled{opacity:.4}body.chLock{overflow:hidden}
 .chTf{display:flex;gap:4px;overflow-x:auto;padding:4px 0 6px;-webkit-overflow-scrolling:touch}.chTf button{flex:0 0 auto;padding:4px 9px;font-size:12px;border-radius:8px;background:#111c33;color:#9fb3d1;border:1px solid #1e3a8a}.chTf button.on{background:#1d4ed8;color:#fff}
 #chModal canvas{touch-action:none;cursor:grab}
+.bd{font-size:11px;color:#9fb3d1;margin-left:4px}.bd.red{color:#f87171;font-weight:600}
