@@ -55,13 +55,13 @@
 <form id="runAddF" class="row"><input id="runAdd" placeholder="Token beobachten: Solana-Mint einfügen" spellcheck="false" autocomplete="off"><button class="btn small" type="submit">Beobachten</button></form>
 <div class="row" style="margin-top:10px"><button class="btn small" id="runNow">🔄 Jetzt prüfen</button><button class="btn small" id="runToggle">⏯ Start/Pause</button></div>
 <p id="runState" class="muted"></p>
-<p class="muted small">Beobachtet automatisch: Coins aus Bundle-Netzwerk-Funden, alle analysierten Solana-Coins und deine manuelle Liste. Daten von DexScreener (max. 30 Coins pro Abfrage). Telegram-Alert (getrennt von Launch-Alerts) nur, wenn ein Coin eine <b>neue höhere Stufe</b> erreicht.</p>
+<p class="muted small">Beobachtet automatisch: Auto-Feed (DexScreener Boosts/Profile + GeckoTerminal Trending/Neu), Coins aus Bundle-Netzwerk-Funden, alle analysierten Solana-Coins und deine manuelle Liste. Daten von DexScreener (max. 30 Coins pro Abfrage). Telegram-Alert (getrennt von Launch-Alerts) nur, wenn ein Coin eine <b>neue höhere Stufe</b> erreicht.</p>
 <ol id="runLevels" class="small"></ol>
 <p class="hinweis">⚠️ Keine Finanzberatung. Volumen, Käufe und Trending lassen sich mit Bots fälschen; Scores sind Indizien, keine Kaufsignale. Läuft nur bei offener Seite.</p></div>
 <div id="runBody"></div>
 <div class="panel sub"><h3 class="glow-s">Läufer-Alerts</h3><div id="runLog"></div></div>
 <details class="panel sub"><summary class="glow-s">⚙ Läufer-Einstellungen &amp; Schwellen</summary>
-<form id="runCfg" class="cfg"><label class="tog"><input type="checkbox" name="on"> Läufer-Signale aktiv</label>
+<form id="runCfg" class="cfg"><label class="tog"><input type="checkbox" name="on"> Läufer-Signale aktiv</label><label class="tog"><input type="checkbox" name="feed"> Auto-Feed (Trending/Neu)</label><label class="tog"><input type="checkbox" name="feedAlert"> Feed-Coins dürfen Telegram-Läufer-Alerts auslösen (ab Min.-Stufe)</label>
 <label>Min. Stufe für Telegram (1–4)<input name="minLvl" type="number" min="1" max="4"></label>
 <label>Cooldown zwischen Alerts je Coin (min)<input name="cooldownMin" type="number" min="0"></label>
 <label>Prüf-Intervall (s, min. 30)<input name="interval" type="number" min="30"></label>
