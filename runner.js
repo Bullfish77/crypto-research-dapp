@@ -1,9 +1,10 @@
 /* Läufer-Signale: erkennt Coins, die "laufen" (Volumen-/Käufer-Momentum) – separat von Launch-Alerts. Keine Finanzberatung. */
 const RUN_CFG="otc_run_cfg",RUN_LIST="otc_run_list",RUN_STATE="otc_run_state",RUN_ANA="otc_run_ana",RUN_LOG="otc_run_log";
-const RUN_DEF={on:true,minLvl:2,cooldownMin:30,interval:45,minLiq:10000,minMc:15000,lvl:[40,55,70,85],gateMc:[15000,40000,100000,250000],turn5:0.05,turn1h:0.5,minTx5:40,buyRatio:0.6,maxAvgTrade:1500,feed:true,feedAlert:true,feedMax:60,er:true,erMcMin:20000,erMcMax:150000,erR15:0.2,erR5:0.05,erAcc:1.8,erV5:2000,erTop:4,erMinC:15,tb:true,tbAgeMin:20,tbMinC:6,tbV5:100000,tbR5:0.4,tbBuy:0.55,tbTop10:30,cf:true,cfGain:0.5,cfWin:30,sp:true,youngLiq:15000,youngMin:30};
+const RUN_DEF={on:true,minLvl:2,cooldownMin:30,interval:45,minLiq:10000,minMc:15000,lvl:[40,55,70,85],gateMc:[15000,40000,100000,250000],turn5:0.05,turn1h:0.5,minTx5:40,buyRatio:0.6,maxAvgTrade:1500,feed:true,feedAlert:true,feedMax:60,er:true,erMcMin:20000,erMcMax:150000,erR15:0.2,erR5:0.05,erAcc:1.8,erV5:2000,erTop:4,erMinC:15,tb:true,tbAgeMin:20,tbMinC:6,tbV5:50000,tbR5:0.4,tbBuy:0.55,tbTop10:30,cf:true,cfGain:0.5,cfWin:30,sp:true,youngLiq:15000,youngMin:30};
 const LVL_TXT=["–","🟢","🟢🟢","🟢🟢🟢","🟢🟢🟢🟢"];
 const LVL_DESC=["Kein Signal","🟢 Erwacht: Score ≥ {0}, MCap ≥ {g0} – erstes Momentum","🟢🟢 Momentum: Score ≥ {1}, MCap ≥ {g1} – Volumen + Käuferdruck steigen","🟢🟢🟢 Läuft: Score ≥ {2}, MCap ≥ {g2}, Liquidität ≥ 25k $ oder graduiert","🟢🟢🟢🟢 Runner: Score ≥ {3}, MCap ≥ {g3}, Liquidität ≥ 50k $ – starkes, beschleunigendes Volumen"];
 const rLs=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},rLsSet=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+{const o=rLs(RUN_CFG,null);if(o&&o.tbV5===100000){o.tbV5=50000;rLsSet(RUN_CFG,o)}}
 const runCfg=()=>({...RUN_DEF,...rLs(RUN_CFG,{})});
 const kfmt=v=>v==null||isNaN(v)?"?":"$"+(v>=1e6?(v/1e6).toFixed(2)+"M":v>=1e3?(v/1e3).toFixed(1)+"k":Math.round(v));
 const pfmt=v=>v==null?"?":(v>0?"+":"")+Number(v).toFixed(1)+"%";
