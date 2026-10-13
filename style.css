@@ -52,3 +52,4 @@ select{background:#020a1c;border:1px solid #3a8cff;color:#cfeaff;padding:10px;bo
 .score{display:inline-block;background:#0b4fd1;border-radius:8px;padding:1px 8px;font-weight:700;margin-left:6px}.lvl{font-size:16px;letter-spacing:1px}.warn{color:#ffc46b}
 .cfg label{font-weight:500;font-size:13px;margin:8px 0}.cfg input{display:block;width:100%;margin-top:4px}
 @media(max-width:600px){.runrow{flex-direction:column}}
+.er{background:#ff5c8a;color:#fff;border-radius:8px;padding:1px 7px;font-size:12px;font-weight:700;margin-left:4px;box-shadow:0 0 10px #ff5c8a}
