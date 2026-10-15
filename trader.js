@@ -5,8 +5,8 @@ const TR_CFG="otc_trader_cfg",TR_POS="otc_trader_pos",TR_HIST="otc_trader_hist",
 const TR_DEF={live:false,on:false,buySol:0.05,tp:150,sl:40,trail:35,trailTightAt:40,trailTight:15,slip:15,prio:0.0002,maxPos:3,dayMax:3,trig:{fr:false,tb:true,cf:true,er:false,lvl:false,rb:false},skipRug:true,skipSniper:true,skipAnon:false,onePer:true,skipBundle:true,bdcOn:true,bdcBundle:35,bdcTop:0,bdcReact:3,bdcStrict:true,dip:true,dipPct:15,dipTmo:30,dipFloor:40,spikeGuard:12};
 const trTrail=(c,peak)=>(c.trailTight>0&&c.trailTightAt>0&&peak>=c.trailTightAt)?{pct:c.trailTight,tight:true}:{pct:c.trail,tight:false};
 const trCfg=()=>{const raw=rLs(TR_CFG,{});const o={...TR_DEF,...raw};o.trig={...TR_DEF.trig,...(o.trig||{})};
- /* Einmalige Safety-Migration (vSpike): Dip an, Bundle fail-closed, FRÜH aus – nur wenn noch nicht migriert; überschreibt nicht nach User-Speichern danach */
- if(!raw._vSpike){o.dip=true;o.bdcStrict=true;o.bdcOn=true;if(o.trig)o.trig.fr=false;if(!(o.trail>0))o.trail=35;if(!(o.dayMax>0.5))o.dayMax=3;o.spikeGuard=o.spikeGuard??12;o.dipPct=Math.min(o.dipPct||15,15);const save={...o,_vSpike:1};rLsSet(TR_CFG,save);Object.assign(o,save)}
+ /* Einmalige Safety-Migration (vDip2): Dip an, Bundle fail-closed, FRÜH aus – erneut erzwungen, da vSpike bei Bestands-Installs nicht griff; überschreibt nicht nach User-Speichern danach */
+ if(!raw._vDip2){o.dip=true;o.bdcStrict=true;o.bdcOn=true;if(o.trig)o.trig.fr=false;if(!(o.trail>0))o.trail=35;if(!(o.dayMax>0.5))o.dayMax=3;o.spikeGuard=o.spikeGuard??12;o.dipPct=Math.min(o.dipPct||15,15);const save={...o,_vSpike:1,_vDip2:1};rLsSet(TR_CFG,save);Object.assign(o,save)}
  return o};
 const trF=(u,o)=>fetch(u,{...(o||{}),signal:AbortSignal.timeout(20000)});let trBeat=0,trBusyAt=0;let W3=null,BS58=null,trKP=null,trTimer=null,trBusy=false,trSol=0,trSolAt=0;const trPending=new Set();
 async function trLibs(){if(!W3){W3=await import("https://esm.sh/@solana/web3.js@1.95.3");BS58=(await import("https://esm.sh/bs58@6.0.0")).default}return W3}
