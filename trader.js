@@ -2,13 +2,15 @@
    Sicherheit: Schlüssel nur im Browser (localStorage, AES-GCM verschlüsselt, PBKDF2 250k), entsperrt nur im Speicher dieser Sitzung.
    Es verlassen den Browser nur signierte Transaktionen (an RPC) sowie öffentliche Daten (Adresse/Mint an Jupiter/PumpPortal/DexScreener). Keine Finanzberatung. */
 const TR_CFG="otc_trader_cfg",TR_POS="otc_trader_pos",TR_HIST="otc_trader_hist",TR_W="otc_trader_wallet",TR_LOG=[];
-const TR_DEF={live:false,on:false,buySol:0.05,tp:150,sl:40,trail:35,trailTightAt:40,trailTight:15,slip:15,prio:0.0002,maxPos:3,dayMax:3,trig:{fr:false,tb:true,cf:true,er:false,lvl:false,rb:false},skipRug:true,skipSniper:true,skipAnon:false,onePer:true,skipBundle:true,bdcOn:true,bdcBundle:35,bdcTop:0,bdcReact:3,bdcStrict:true,dip:true,dipPct:15,dipTmo:45,dipFloor:40,spikeGuard:12};
+const TR_DEF={live:false,on:false,buySol:0.05,tp:150,sl:40,trail:35,trailTightAt:40,trailTight:15,slip:15,prio:0.0002,maxPos:3,dayMax:3,trig:{fr:false,tb:true,cf:true,er:false,lvl:false,rb:false},skipRug:true,skipSniper:true,skipAnon:false,onePer:true,skipBundle:true,bdcOn:true,bdcBundle:35,bdcTop:0,bdcReact:3,bdcStrict:true,dip:true,dipPct:10,dipTmo:45,dipFloor:40,spikeGuard:12};
 const trTrail=(c,peak)=>(c.trailTight>0&&c.trailTightAt>0&&peak>=c.trailTightAt)?{pct:c.trailTight,tight:true}:{pct:c.trail,tight:false};
 const trCfg=()=>{const raw=rLs(TR_CFG,{});const o={...TR_DEF,...raw};o.trig={...TR_DEF.trig,...(o.trig||{})};
  /* Einmalige Safety-Migration (vDip2): Dip an, Bundle fail-closed, FRÜH aus – erneut erzwungen, da vSpike bei Bestands-Installs nicht griff; überschreibt nicht nach User-Speichern danach */
  if(!raw._vDip2){o.dip=true;o.bdcStrict=true;o.bdcOn=true;if(o.trig)o.trig.fr=false;if(!(o.trail>0))o.trail=35;if(!(o.dayMax>0.5))o.dayMax=3;o.spikeGuard=o.spikeGuard??12;o.dipPct=Math.min(o.dipPct||15,15);const save={...o,_vSpike:1,_vDip2:1};rLsSet(TR_CFG,save);Object.assign(o,save)}
  /* Einmalige Migration (vDip3): Dip-Timeout auf mind. 45 min verbreitern, damit gute Signale den Umkehr-Einstieg erreichen; Bundle-fail-closed nur noch bei Netzwerk/CORS gelockert (Code) */
  if(!raw._vDip3){if(!(o.dipTmo>=45))o.dipTmo=45;const save={...o,_vDip3:1};rLsSet(TR_CFG,save);Object.assign(o,save)}
+ /* Einmalige Migration (vDip4): geforderter Dip 15→10 %, da 15 %-Rücksetzer selten erreicht wurden; Werte >10 werden auf 10 gesenkt, kleinere bleiben */
+ if(!raw._vDip4){if(!(o.dipPct>0)||o.dipPct>10)o.dipPct=10;const save={...o,_vDip4:1};rLsSet(TR_CFG,save);Object.assign(o,save)}
  return o};
 const trF=(u,o)=>fetch(u,{...(o||{}),signal:AbortSignal.timeout(20000)});let trBeat=0,trBusyAt=0;let W3=null,BS58=null,trKP=null,trTimer=null,trBusy=false,trSol=0,trSolAt=0;const trPending=new Set();
 async function trLibs(){if(!W3){W3=await import("https://esm.sh/@solana/web3.js@1.95.3");BS58=(await import("https://esm.sh/bs58@6.0.0")).default}return W3}
@@ -42,7 +44,7 @@ function trSkip(m,x,c){const r=runData[m]?.r,p=x?.p||runData[m]?.p;if(!p)return"
 /* Spike-Hoch aus m5-Veränderung schätzen: bei Pump ≈ aktueller Preis, nach Pullback ≈ erholtes Hoch */
 function trSpikeHigh(p){const pr=+p?.priceUsd||0;if(!pr)return 0;const ch=+(p.priceChange?.m5);if(!isFinite(ch))return pr;return ch>=0?pr:pr/(1+ch/100)}
 function trNearSpike(p,c){const pr=+p?.priceUsd||0,H=trSpikeHigh(p),g=c.spikeGuard??12;return H>0&&pr>=H*(1-g/100)}
-function trEnqueueDip(m,label,p,c,forced){const Wt=trWait();if(Wt.some(w=>w.mint===m))return false;const pr=+p?.priceUsd||0;if(!pr)return false;const pct=forced?(c.spikeGuard??12):(c.dipPct||15);Wt.push({mint:m,sym:p.baseToken?.symbol||"?",name:p.baseToken?.name||"",label,t0:Date.now(),p0:pr,H:pr,armed:0,lo:0,cand:[],dipPct:pct,spikeGuard:!!forced});rLsSet(TR_WAIT,Wt);trLog("⏳ "+(p.baseToken?.symbol||m.slice(0,6))+(forced?" Spike-Schutz":" wartet auf Dip")+" (−"+pct+" % vom Hoch, "+label+")");trRender();return true}
+function trEnqueueDip(m,label,p,c,forced){const Wt=trWait();if(Wt.some(w=>w.mint===m))return false;const pr=+p?.priceUsd||0;if(!pr)return false;const pct=forced?(c.spikeGuard??12):(c.dipPct||10);Wt.push({mint:m,sym:p.baseToken?.symbol||"?",name:p.baseToken?.name||"",label,t0:Date.now(),p0:pr,H:pr,armed:0,lo:0,cand:[],dipPct:pct,spikeGuard:!!forced});rLsSet(TR_WAIT,Wt);trLog("⏳ "+(p.baseToken?.symbol||m.slice(0,6))+(forced?" Spike-Schutz":" wartet auf Dip")+" (−"+pct+" % vom Hoch, "+label+")");trRender();return true}
 async function trSignal(key,label,x){const c=trCfg();if(!c.on||!c.trig[key])return;const m=x?.mint||x?.p?.baseToken?.address;if(!m||trPending.has(m))return;
  const pos=trPos();if(pos.some(p=>p.mint===m))return;if(c.onePer&&trHist().some(h=>h.mint===m&&h.live===c.live))return;if(pos.filter(p=>p.live===c.live).length>=c.maxPos)return trLog("⏭ "+m.slice(0,6)+": max. Positionen");
  if(trToday(c.live)+c.buySol>c.dayMax+1e-9)return trLog("⏭ Tageslimit erreicht");const why=trSkip(m,x,c);if(why)return trLog("⏭ "+m.slice(0,6)+" übersprungen: "+why);
@@ -129,8 +131,8 @@ document.addEventListener("click",async e=>{const id=e.target?.id;if(!/^trExp(Co
  trExpMsg("✅ "+X.trades.length+" Trades, "+X.positions.length+" Positionen, "+X.alerts.length+" Alerts")}catch(err){trExpMsg("❌ "+err.message)}});
 
 /* Empfehlung 15.10.2026: Bundle-Muster → Dip/Spike-Schutz, fail-closed, FRÜH aus, Trailing 35 + eng ab +40 */
-const TR_REC={tp:150,sl:40,trail:35,trailTightAt:40,trailTight:15,dayMax:3,buySol:0.05,dip:true,dipPct:15,dipTmo:45,dipFloor:40,bdcOn:true,bdcStrict:true,spikeGuard:12,trig:{fr:false,tb:true,cf:true,er:false,lvl:false,rb:false},_vSpike:1};
-document.addEventListener("click",e=>{if(e.target?.id!=="trRec")return;const c={...trCfg(),...TR_REC,trig:{...trCfg().trig,...TR_REC.trig}};rLsSet(TR_CFG,c);trCfgUI();trRender();const m=$("#trMsg");if(m)m.textContent="✅ Empfehlung: Dip an, Spike-Schutz, Bundle fail-closed, FRÜH aus, Trail 35/eng 15"});
+const TR_REC={tp:150,sl:40,trail:35,trailTightAt:40,trailTight:15,dayMax:3,buySol:0.05,dip:true,dipPct:10,dipTmo:45,dipFloor:40,bdcOn:true,bdcStrict:true,spikeGuard:12,trig:{fr:false,tb:true,cf:true,er:false,lvl:false,rb:false},_vSpike:1,_vDip4:1};
+document.addEventListener("click",e=>{if(e.target?.id!=="trRec")return;const c={...trCfg(),...TR_REC,trig:{...trCfg().trig,...TR_REC.trig}};rLsSet(TR_CFG,c);trCfgUI();trRender();const m=$("#trMsg");if(m)m.textContent="✅ Empfehlung: Dip an (−10 %), Spike-Schutz, Bundle fail-closed, FRÜH aus, Trail 35/eng 15"});
 
 /* 🤖 Bot-Pump/Treppen-Detektor (Fall BPCATE 14.10.2026): ≥8 fertige 1-min-Kerzen, ≤10 % rot, Volumen sehr gleichmäßig (CV<0.35),
    keine Kerze >15 %, Anstieg >30 % → gleichmäßige Volume-Bot-Leiter statt echter Nachfrage. Echte Läufer (CHIPTO/Tuxedo/Kirk) hatten 20–33 % rote Kerzen. */
